@@ -33,7 +33,11 @@ void ServoHandler(int timer)
         _timer->CCMP = 0;
     } else {
         if (SERVO_INDEX(timer, currentServoIndex[timer]) < ServoCount && SERVO(timer, currentServoIndex[timer]).Pin.isActive == true) {
-            digitalWrite(SERVO(timer, currentServoIndex[timer]).Pin.nbr, LOW);   // pulse this channel low if activated
+            if (mpcont) {
+              mpcont->digitalWrite(SERVO(timer, currentServoIndex[timer]).Pin.nbr, LOW);
+            } else {
+              digitalWrite(SERVO(timer, currentServoIndex[timer]).Pin.nbr, LOW);   // pulse this channel low if activated
+            }
         }
     }
 
@@ -42,7 +46,12 @@ void ServoHandler(int timer)
 
     if (SERVO_INDEX(timer, currentServoIndex[timer]) < ServoCount && currentServoIndex[timer] < SERVOS_PER_TIMER) {
         if (SERVO(timer, currentServoIndex[timer]).Pin.isActive == true) {   // check if activated
+          if (mpcont) {
+            mpcont->digitalWrite(SERVO(timer, currentServoIndex[timer]).Pin.nbr, HIGH);
+          }
+          else {
             digitalWrite(SERVO(timer, currentServoIndex[timer]).Pin.nbr, HIGH);   // it's an active channel so pulse it high
+          }
         }
 
         // Get the counter value
@@ -132,7 +141,12 @@ uint8_t Servo::attach(int pin, int min, int max)
   timer16_Sequence_t timer;
 
   if (this->servoIndex < MAX_SERVOS) {
-    pinMode(pin, OUTPUT);                                   // set servo pin to output
+    if (mpcont) {
+      mpcont->pinMode(pin, OUTPUT);
+    } else {
+      pinMode(pin, OUTPUT);   
+    }
+                                // set servo pin to output
     servos[this->servoIndex].Pin.nbr = pin;
     // todo min/max check: abs(min - MIN_PULSE_WIDTH) /4 < 128
     this->min  = (MIN_PULSE_WIDTH - min)/4; //resolution of min/max is 4 us
@@ -160,9 +174,11 @@ void Servo::detach()
 
 void Servo::write(int value)
 {
+  
   // treat values less than 544 as angles in degrees (valid values in microseconds are handled as microseconds)
   if (value < MIN_PULSE_WIDTH)
   {
+    value = map(value, 0, 180, writeMapMin, writeMapMax)
     if (value < 0)
       value = 0;
     else if (value > 180)

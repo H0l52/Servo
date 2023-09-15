@@ -49,6 +49,7 @@
 #define Servo_h
 
 #include <inttypes.h>
+#include "MCP23008.h"
 
 /* 
  * Defines for 16 bit timers used with Servo library 
@@ -115,6 +116,14 @@ public:
   int read();                        // returns current pulse width as an angle between 0 and 180 degrees
   int readMicroseconds();            // returns current pulse width in microseconds for this servo (was read_us() in first release)
   bool attached();                   // return true if this servo is attached, otherwise false 
+
+  long writeMapMax = 180;
+  long writeMapMin = 0;
+  bool timed = false;
+  long mill = 0;
+  long msPerDegree = 5;
+
+  MCP23008* mpcont = NULL;
 private:
    uint8_t servoIndex;               // index into the channel data for this servo
    int8_t min;                       // minimum is this value times 4 added to MIN_PULSE_WIDTH    
