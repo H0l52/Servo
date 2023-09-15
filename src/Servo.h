@@ -101,6 +101,7 @@ typedef struct  {
 
 typedef struct {
   ServoPin_t Pin;
+  MCP23008* mpcont = NULL;
   volatile unsigned int ticks;
 } servo_t;
 

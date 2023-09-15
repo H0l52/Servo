@@ -33,8 +33,8 @@ void ServoHandler(int timer)
         _timer->CCMP = 0;
     } else {
         if (SERVO_INDEX(timer, currentServoIndex[timer]) < ServoCount && SERVO(timer, currentServoIndex[timer]).Pin.isActive == true) {
-            if (mpcont) {
-              mpcont->digitalWrite(SERVO(timer, currentServoIndex[timer]).Pin.nbr, LOW);
+            if (SERVO(timer, currentServoIndex[timer]).mpcont) {
+              SERVO(timer, currentServoIndex[timer]).mpcont->digitalWrite(SERVO(timer, currentServoIndex[timer]).Pin.nbr, LOW);
             } else {
               digitalWrite(SERVO(timer, currentServoIndex[timer]).Pin.nbr, LOW);   // pulse this channel low if activated
             }
@@ -148,6 +148,7 @@ uint8_t Servo::attach(int pin, int min, int max)
     }
                                 // set servo pin to output
     servos[this->servoIndex].Pin.nbr = pin;
+    if (mpcont) servos[this->servoIndex].mpcont = mpcont;
     // todo min/max check: abs(min - MIN_PULSE_WIDTH) /4 < 128
     this->min  = (MIN_PULSE_WIDTH - min)/4; //resolution of min/max is 4 us
     this->max  = (MAX_PULSE_WIDTH - max)/4;
@@ -178,7 +179,7 @@ void Servo::write(int value)
   // treat values less than 544 as angles in degrees (valid values in microseconds are handled as microseconds)
   if (value < MIN_PULSE_WIDTH)
   {
-    value = map(value, 0, 180, writeMapMin, writeMapMax)
+    value = map(value, 0, 180, writeMapMin, writeMapMax);
     if (value < 0)
       value = 0;
     else if (value > 180)
